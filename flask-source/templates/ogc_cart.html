@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Grocery Store - Cart</title>
+  <style>
+    body {
+      background-repeat: no-repeat;
+            background-size: cover;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      background-image:url("static/images/bg.jpg");
+    }
+    nav{
+            
+            background: #1b1b1b;
+            width: 100%;
+            padding: 10px 0;
+            z-index: 12;
+          }
+          nav .menu{
+            max-width: 1250px;
+            margin: auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+          }
+          .menu .logo a{
+            text-decoration: none;
+            color: #fff;
+            font-size: 35px;
+            font-weight: 600;
+          }
+          .menu ul{
+            display: inline-flex;
+          }
+          .menu ul li{
+            list-style: none;
+            margin-left: 7px;
+          }
+          .menu ul li:first-child{
+            margin-left: 0px;
+          }
+          .menu ul li a{
+            text-decoration: none;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 500;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+          }
+          .menu ul li a:hover{
+            background: #fff;
+            color: black;
+          }
+    
+    h1 {
+      color: white;
+      text-align: center;
+    }
+    h3 {
+      color: rgb(17, 17, 17);
+      text-align: center;
+      margin-top: 20px;
+    }
+    .cart-items {
+      color: white;
+
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+      margin: 20px;
+      width: 70%;
+    }
+    
+    .cart-item {
+      backdrop-filter: blur(10px);
+      border: 3px solid #ccc;
+         padding: 10px;
+         text-align: center;
+         margin: 10px;
+         max-width: 200px;
+         border-radius: 25px;
+      background-color: #ffffff2a;
+      padding: 10px;
+      
+     
+    }
+    
+    .cart-item p {
+      margin: 5px 0;
+    }
+    
+    .cart-item button {
+      background-color:#555150;
+      color: #fff;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    
+    .cart-summary {
+      color: white;
+      backdrop-filter: blur(10px);
+      background-color: #ffffff18;
+      padding: 20px;
+      border: 3px solid #ccc;
+      margin: 20px;
+      border-radius: 25px;
+      width: 250px;
+      
+    
+    }
+    
+    .cart-summary h2 {
+      color: #ffffff;
+    }
+    
+    .cart-summary p {
+      margin: 10px 0;
+    }
+    
+    .cart-summary button {
+     
+      background-color: #2ecc71;
+      color: #fff;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    
+    .footer {
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      padding: 10px;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+    }
+    .number_count{
+      display: flex;
+      justify-content: space-around;
+    }
+    .dnone{
+        display: none;
+    }
+    .cart-container{
+      display: flex;
+    }
+    .boss{
+      display: none;
+    }
+    .Removebutton{
+      justify-content: space-around;
+      display: grid;
+      margin-top:10px;
+    }
+    .ref{
+      display: contents;
+      text-align: center;
+    }
+    .homes{
+      text-align: center;
+    }
+    .upadeofbutton{
+      background-color: #2ecc71;
+      color: #fff;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    
+
+      #product {
+         
+         padding: 10px;
+         text-align: center;
+         margin: 10px;
+         max-width: 200px;
+         border-radius: 25px;
+      }
+
+      #product img {
+         max-width: 80px;
+         max-height: 80px;
+      }
+
+   
+    </style>
+</head>
+
+<body >
+  <nav>
+    <div class="menu">
+      <div class="logo">
+        <a href="#">Online Grocery Store</a>
+      </div>
+      <ul>
+        <li><a href="/home">Home</a></li>
+        <li><a href="/profile">My Profile</a></li>
+        <li><a href="/cart">Cart</a></li>
+        <li><a href="/wishlist">Wishlist</a></li>
+        <li><a href="/order">Order</a></li>
+        <li><a href="/logout" id="logout">Logout</a></li>
+
+       </ul>
+    </div>
+</nav>
+  
+  <h1>Shopping Cart</h1>
+  <p  class="ref"></p>
+  <p class="homes"></p>
+  <div class="cart-container">
+   
+  <div class="cart-items">
+    <div<!--dynamic adding--></div>
+  
+  <div class="cart-summary">
+    <h2>Summary</h2>
+    <div id ="sum_products"></div>
+    <p id="cart"></p>
+    <button onclick="checkout()">Checkout</button>
+  </div>
+</div>
+
+
+
+  <script>
+    function checkout(){
+      window.location.href="/transaction"
+    }
+    var value= {{data|tojson}};
+    cart=[]
+    for (let i = 0; i < value.length; i++) {
+      cart.push({"id":value[i][0],"name":value[i][1],"aquan":value[i][3],"price":value[i][4]})
+    } 
+    console.log(cart)
+     let total=0
+    cartcheck()
+    function removes(productid,productName,productquant) {
+      console.log(productid,productName)
+      data={"id":productid,"fun":"rem",'quan':productquant}
+      fetch('/function-cart', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+      let value = 0;
+      let index = 0;
+      for (let x of cart) {
+        if (x.name == productName) {
+          index = cart.indexOf(x);
+          x.aquan -= 1;
+          document.getElementById("quant" + x.name).innerHTML = x.aquan;
+          if (x.aquan == 0) {
+            cart.splice(index, 1);
+            document.getElementById("inside"+x.name).innerHTML = "No item in cart";
+            document.querySelector(".cart-item"+x.name).classList.add("dnone")
+          }
+        }
+      }
+      for (let x of cart) {
+        value = value + (x.price * x.aquan);
+      }
+      document.getElementById("cart").innerHTML = `Total amount: $${value}`;
+      updatesummary()
+      cartcheck()
+      localStorage.setItem("apple",total)
+    }
+
+    let checker
+    function adds(productid,productName,productquant){
+      data={"id":productid,"fun":"add",'quan':productquant}
+      fetch('/function-cart', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+      .then(response=>response.json())
+      .then(datas=>{
+        checker=datas.product_quan
+        console.log(datas)
+        if (datas.Status == 201) {
+          alert(datas.errors)
+          //return response.json();
+        }
+        if (datas.Status==200){
+        
+        //console.log(checker)
+        for(let x of cart){
+            if (x.id == productid) {
+                index = cart.indexOf(x);
+                if(checker>0){
+                  console.log(checker)
+                x.aquan += 1;
+                document.getElementById("quant" + x.name).innerHTML = x.aquan;}
+
+            }
+        }
+        }
+        let value=0
+        for (let x of cart) {
+        value = value + (x.price * x.aquan);
+        }
+        document.getElementById("cart").innerHTML = `Total amount: $${value}`;
+        updatesummary()
+        cartcheck()
+        localStorage.setItem("apple",value)
+      })
+
+        
+    }
+    function cartcheck(){
+      if (cart.length==0){
+        document.querySelector(".cart-summary").classList.add("boss")
+        let ne='<h3 id="upadeofnone" ></h3>'
+        document.querySelector('.ref').insertAdjacentHTML('beforeend',ne);
+        document.getElementById("upadeofnone").innerHTML="There is no Item in the Cart";
+        let se='<button id="upadeofbutton" onclick="redirect()"></button>';
+        document.querySelector('.homes').insertAdjacentHTML('beforeend',se);
+        document.getElementById("upadeofbutton").innerHTML="View Product";
+        localStorage.setItem("apple",total)
+      }
+    }
+    function redirect(){
+      window.location.href="/home"
+    }
+
+
+    function updatesummary(){
+      const summarypro=document.getElementById("sum_products");
+      summarypro.innerHTML='';
+      cart.forEach(function (item){
+        const prodsum=document.createElement("P")
+        prodsum.textContent=`${item.aquan} x ${item.name} - $${item.price*item.aquan}`;
+        summarypro.appendChild(prodsum)
+        localStorage.setItem("apple",total)
+        localStorage.setItem("count",cart.length)
+      })
+    }
+
+  function totalrem(productid,productName,productquant){
+    data={"id":productid,"fun":"totrem",'quan':productquant}
+      fetch('/function-cart', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+    .then(response=>response.json())
+    .then(datas=>{
+      checker=datas.product_quan
+      console.log(datas)
+      if (datas.Status == 200) {
+        alert(datas.message)
+        //return response.json();
+      }
+      index=0
+   
+   cart.forEach(function (product){
+    if(product.name==productName){
+      index = cart.indexOf(product);
+      cart.splice(index, 1);
+      document.querySelector(".cart-item"+product.name).classList.add("dnone")
+      updatesummary()
+      sumtocart()
+      removes()
+      
+    }
+    
+  })
+    })
+
+}
+
+
+    function sumtocart(){
+      total=0;
+      cart.forEach(function(item){
+        total+=item.aquan*item.price;
+        document.getElementById("cart").innerHTML=`Total amount: $${total}`
+        localStorage.setItem("apple",total)
+        localStorage.setItem("count",cart.length)
+      })
+    }
+
+    cart.forEach(function (item) {
+      let newbox = `<div class=" cart-item cart-item${item.name}">
+      <div id="product"><img src="static/images/${item.name}.jpg" alt="Tomato"></div>
+      <div id="inside${item.name}"><p style="justify-content: space-around; display:flex;">${item.name}</p>
+      <p style="justify-content: space-around; display:flex;">Price: $${item.price}</p>
+      <div class="number_count">
+      <button onclick="removes(${item.id}, '${item.name}',${item.aquan})">-</button>
+      <p id="quant${item.name}">${item.aquan}</p>
+      <button onclick="adds(${item.id},'${item.name}',${item.aquan})">+</button>
+      </div>
+      <div class="Removebutton"> 
+      <button onclick="totalrem(${item.id},'${item.name}',${item.aquan})">Remove</button>
+      <div>
+    </div>`;
+      document.querySelector('.cart-items').insertAdjacentHTML('beforeend', newbox);
+      sumtocart()
+    });
+    localStorage.setItem("apple",total)
+    updatesummary()
+    
+  </script>
+</body>
+</html>

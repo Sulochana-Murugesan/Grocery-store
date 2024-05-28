@@ -1,0 +1,553 @@
+<html>
+  <head>
+    <title>Welcome - Online Grocery Store</title>
+    <style>
+      body {
+        background-repeat: no-repeat;
+        background-size: cover;
+        font-family: Times New Roman;
+        margin: 0;
+        background-image:url("static/images/bg2.jpg");
+          }
+      
+      h3,p{
+        color: white;
+      }
+
+      button {
+        cursor: pointer;
+        padding: 5px 10px;
+        border: none;
+        background-color: #f0f0f0;
+        border-radius: 5px;
+        margin: 0 5px;
+      }
+
+      nav {
+        background: #1b1b1b;
+        width: 100%;
+        padding: 10px 0;
+        z-index: 12;
+      }
+
+      nav .menu {
+        max-width: 1250px;
+        margin: auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 20px;
+      }
+
+      .menu .logo a {
+        text-decoration: none;
+        color: #fff;
+        font-size: 35px;
+        font-weight: 600;
+      }
+
+      .menu ul {
+        display: inline-flex;
+      }
+
+      .menu ul li {
+        list-style: none;
+        margin-left: 7px;
+      }
+
+      .menu ul li:first-child {
+        margin-left: 0px;
+      }
+
+      .menu ul li a {
+        text-decoration: none;
+        color: #fff;
+        font-size: 18px;
+        font-weight: 500;
+        padding: 8px 15px;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+      }
+
+     
+
+      .menu ul li a:hover {
+        background: #fff;
+        color: black;
+      }
+
+      #content {
+        padding: 20px;
+      }
+
+      #product-container {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+      }
+
+      #product {
+   
+    border: 3px solid #ccc;
+    padding: 10px 10px 20px 10px;
+    text-align: center;
+    margin: 10px;
+    max-width: 220px;
+    border-radius: 25px;
+    background-color: #ffffff33;
+    backdrop-filter: blur(12px);
+}
+      #product img {
+        max-width: 80px;
+        max-height: 80px;
+      }
+
+      .add-to-cart {
+        background-color: #2ecc71;
+        color: white;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        display: block;
+        margin: 15px;
+      }
+
+      .add-to-wish {
+        background-color: #555150;
+        color: white;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-bottom: 25px;
+      }
+
+      .disabled {
+        background-color: grey;
+        pointer-events: none;
+      }
+
+      input{
+        width:200px;
+        height: 30px;
+        border-radius: 10px;
+
+      }
+      .flex{
+        display: flex;
+        justify-content: space-around;
+        margin-left: 10px;
+        margin-right: 24px;
+      }
+
+
+      #Search-product {
+        display: none;
+        justify-content: space-around;
+        flex-wrap: wrap;
+      }
+
+      table{
+    color: #f0f0f0;
+    text-align: center;
+    width: 100%;
+    border-collapse: collapse;
+    display:grid;
+    justify-content: space-around;
+
+}
+th,td{
+
+    padding: 18px;
+    text-align: left;
+    border: 2px solid #fafafab7;
+}
+.divback {
+    background-image: url("static/images/seeimag.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-size: 767px 219px;
+    width: 765px;
+    margin-top: 40px;
+    margin-bottom: 50px;
+    height: 208px;
+    margin-left: 280px;
+    border: 4px solid rgb(124, 124, 124);
+    border-radius: 53px;
+}
+#welcome {
+        margin-top: 30px;
+        margin-bottom: 10px;
+        margin-left: 20px;
+        color: rgb(0, 0, 0);
+        text-shadow: 10px 10px 10px  rgba(37, 37, 37, 0.719);
+        font-size: 25px;
+        
+        font-weight: bold;
+      }
+h2{ margin-top: 10px;
+        margin-bottom: 10px;
+        margin-left: 20px;
+        color: rgb(0, 0, 0);
+        text-shadow: 10px 10px 10px rgba(26, 26, 26, 0.719);
+        font-size: 25px;
+        
+        font-weight: bold;
+}
+    </style>
+  </head>
+
+  <body>
+    <nav>
+      <div class="menu">
+        <div class="logo">
+          <a href="#">Online Grocery Store</a>
+        </div>
+        <ul>
+          <div class="flex">
+            
+            <li><input type="text" id="search" required></li>
+            <li><button onclick="search()">Search</button></li>
+          </div>
+         
+          <li><a href="/home">Home</a></li>
+          <li><a href="/profile">My Profile</a></li>
+          <li><a href="/cart">Cart</a></li>
+          <li><a href="/wishlist">Wishlist</a></li>
+          <li><a href="/order">Order</a></li>
+          <li><a href="/logout" id="logout">Logout</a></li>
+        </ul>
+      </div>
+    </nav>
+    <div class="divback">
+      <h1 id="welcome"></h1>
+      <h2>Fell free to Explore us</h2>
+  </div>
+    <h2 style="color: #ffffff; text-align: center;">Explore Products </h2>
+    <div id="product-container"></div>
+    <div id="Search-product"></div>
+
+    <script>
+      var products = [];
+      fetch("/get-products", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        // body: JSON.stringify(product_data)
+      })
+        .then((response) => {
+          if (response.status == 200) {
+            //  console.log(response)
+            return response.json();
+          } else {
+            throw `error with status ${response.status}`;
+          }
+        })
+
+        .then((result) => {
+          var prod_lis = result["products"];
+          // console.log(prod_lis);
+          products = prod_lis;
+          welcome();
+        })
+        .catch((error) => {
+          console.error("Error fetching products:", error);
+          // Handle error, show a message, or retry the fetch
+        });
+
+      function welcome() {
+        // console.log(products)
+        usn = localStorage.getItem("userName");
+        console.log("Hello " + usn + " Welcome to OGS");
+        document.getElementById("welcome").innerHTML =
+          "Hello " + usn + " Welcome to Online Grocery Store !!";
+
+        var productContainer = document.getElementById("product-container");
+
+        products.forEach(function (product) {
+          var productDiv = document.createElement("div");
+          productDiv.id = "product";
+
+          var image = document.createElement("img");
+          image.src = "static/images/" + product.name.toLowerCase() + ".jpg";
+          image.alt = product.name;
+
+          var heading = document.createElement("h3");
+          heading.textContent = product.name;
+
+          var price = document.createElement("p");
+          price.textContent = "$" + product.price;
+
+          var cartbutton = document.createElement("button");
+          cartbutton.className = "add-to-cart";
+          cartbutton.textContent = "Add to Cart";
+          cartbutton.onclick = function () {
+            pusher(product.name, product.price, product.id, cartbutton);
+          };
+          var wishbutton = document.createElement("button2");
+          wishbutton.className = "add-to-wish";
+          wishbutton.textContent = "Add to Wishlist";
+          wishbutton.onclick = function () {
+            addtowish(product.name, product.price, product.id, wishbutton);
+          };
+
+          productDiv.appendChild(image);
+          productDiv.appendChild(heading);
+          productDiv.appendChild(price);
+          productDiv.appendChild(cartbutton);
+          productDiv.appendChild(wishbutton);
+
+          productContainer.appendChild(productDiv);
+        });
+      }
+      var arr = [];
+
+      function pusher(itemname, price, id, button) {
+        button.classList.add("disabled");
+        button.textContent = "Added ✓";
+        button.disabled = true;
+        cus_id = localStorage.getItem("customerId");
+        product_data = {
+          pid: id,
+          pname: itemname,
+          quant: 1,
+          desc: "fruits",
+          price: price,
+          cid: cus_id,
+        };
+
+        fetch("/add-cart", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(product_data),
+        })
+          .then((response) => {
+            if (response.status == 200) {
+              //  console.log(response)
+              return response.json();
+            } else {
+              throw `error with status ${response.status}`;
+            }
+          })
+
+          .then((result) => {
+            console.log(result);
+            if(result['status'] == 'invalid'){
+              alert(result['message'])
+            }
+          });
+      }
+
+      function addtowish(itemname, price, id, button) {
+        console.log("added to wish");
+        button.classList.add("disabled");
+        button.textContent = "Added to wishlist ✓";
+        button.disabled = true;
+        cus_id = localStorage.getItem("customerId");
+        product_data = {
+          pid: id,
+          pname: itemname,
+          quant: 1,
+          desc: "fruits",
+          price: price,
+          cid: cus_id,
+        };
+
+        fetch("/add-wish", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(product_data),
+        })
+          .then((response) => {
+            if (response.status == 200) {
+              //  console.log(response)
+              return response.json();
+            } else {
+              throw `error with status ${response.status}`;
+            }
+          })
+
+          .then((result) => {
+            console.log(result);
+            if(result['status'] == 'invalid'){
+              alert(result['message'])
+            }
+          });
+      }
+
+      document
+        .getElementById("logout")
+        .addEventListener("click", function (event) {
+          event.preventDefault();
+          alert("Logged Out Successfully !!");
+          window.location.href = "/logout";
+        });
+
+
+
+
+
+        function search(){
+
+          document.getElementById("product-container").style.display = "none";
+          
+          var data={'search':document.getElementById('search').value};
+      fetch("/redersearch", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data)
+      })
+        .then((response) => {
+          if (response.status == 200) {
+            
+            return response.json();
+          } else {
+            throw `error with status ${response.status}`;
+          }
+        })
+
+        .then((result) => {
+          var prod_lis = result["products"];
+          console.log(prod_lis);
+          products = prod_lis;
+          welcome();
+        })
+        .catch((error) => {
+          console.error("Error fetching products:", error);
+          // Handle error, show a message, or retry the fetch
+        });
+
+      function welcome() {
+        document.getElementById("Search-product").style.display = "flex";
+        document.getElementById("Search-product").innerHTML = "";
+        var productContainer = document.getElementById("Search-product");
+        console.log(productContainer)
+        products.forEach(function (product) {
+          var productDiv = document.createElement("div");
+          productDiv.id = "product";
+
+          var image = document.createElement("img");
+          image.src = "static/images/" + product.name.toLowerCase() + ".jpg";
+          image.alt = product.name;
+
+          var heading = document.createElement("h3");
+          heading.textContent = product.name;
+
+          var price = document.createElement("p");
+          price.textContent = "$" + product.price;
+
+          var cartbutton = document.createElement("button");
+          cartbutton.className = "add-to-cart";
+          cartbutton.textContent = "Add to Cart";
+          cartbutton.onclick = function () {
+            pusher(product.name, product.price, product.id, cartbutton);
+          };
+          var wishbutton = document.createElement("button2");
+          wishbutton.className = "add-to-wish";
+          wishbutton.textContent = "Add to Wishlist";
+          wishbutton.onclick = function () {
+            addtowish(product.name, product.price, product.id, wishbutton);
+          };
+
+          productDiv.appendChild(image);
+          productDiv.appendChild(heading);
+          productDiv.appendChild(price);
+          productDiv.appendChild(cartbutton);
+          productDiv.appendChild(wishbutton);
+
+          productContainer.appendChild(productDiv);
+        });
+      }
+      var arr = [];
+      function pusher(itemname, price, id, button) {
+        button.classList.add("disabled");
+        button.textContent = "Added ✓";
+        button.disabled = true;
+        cus_id = localStorage.getItem("customerId");
+        product_data = {
+          pid: id,
+          pname: itemname,
+          quant: 1,
+          desc: "fruits",
+          price: price,
+          cid: cus_id,
+        };
+
+        fetch("/add-cart", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(product_data),
+        })
+          .then((response) => {
+            if (response.status == 200) {
+              //  console.log(response)
+              return response.json();
+            } else {
+              throw `error with status ${response.status}`;
+            }
+          })
+
+          .then((result) => {
+            console.log(result);
+            if(result['status'] == 'invalid'){
+              alert(result['message'])
+            }
+          });
+      }
+
+
+      function addtowish(itemname, price, id, button) {
+        console.log("added to wish");
+        button.classList.add("disabled");
+        button.textContent = "Added to wishlist ✓";
+        button.disabled = true;
+        cus_id = localStorage.getItem("customerId");
+        product_data = {
+          pid: id,
+          pname: itemname,
+          quant: 1,
+          desc: "fruits",
+          price: price,
+          cid: cus_id,
+        };
+
+
+        fetch("/add-wish", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(product_data),
+        })
+          .then((response) => {
+            if (response.status == 200) {
+              //  console.log(response)
+              return response.json();
+            } else {
+              throw `error with status ${response.status}`;
+            }
+          })
+
+
+          .then((result) => {
+            console.log(result);
+            if(result['status'] == 'invalid'){
+              alert(result['message'])
+            }
+          });
+      }
+
+    }  
+    </script>
+  </body>
+</html>
