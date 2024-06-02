@@ -138,7 +138,7 @@
          margin-top: 50px;
         }
         input{
-        width:300px;
+        width:200px;
         height: 30px;
         margin-top: -12px;
         border-radius: 10px;
@@ -182,6 +182,9 @@ th,td{
    margin-top: 100px;
    display: none;
 }
+.tags{
+   display: none;
+}
     </style>
 </head>
 <body>
@@ -199,6 +202,7 @@ th,td{
              <li> <a href="/rendersort">Sort Product</a></li>
               <li><a href="/admin-home">Home</a></li>
               <li><a href="/adminprof">My Profile</a></li>
+              <li><a href="/admin-register">Admin</a></li>
               <li><a href="/logout" id="logout">Logout</a></li>
   
            </ul>
@@ -240,13 +244,15 @@ th,td{
     <tbody id="r1">
     </tbody>
       </table>
+      <p class="tags">Kindly enter Name of the Product</p>
   </div>
      <script>
       function search(){
+         if (document.getElementById("search").value!=''){
          document.getElementById('container').style.display="none";
+         
          document.getElementById('htag').style.display="block";
          data={'search':document.getElementById("search").value};
-         console.log(data)
          fetch('/prdsearch', {
       method: 'POST',
       headers: {
@@ -257,6 +263,7 @@ th,td{
     .then(response=>response.json())
     .then(datas=>{
         if (datas.Status == 200) {
+         if (datas.length!=0){
          var k =''
           k+=`<tr>
                   <th>Product ID</th>
@@ -271,10 +278,21 @@ th,td{
           }
           document.getElementById('loop').style.display="flex";
          }
+         else{
+            document.getElementById('r1').innerHTML='';
+            document.getElementById('loop').style.display="flex";
+         }
+      }
+         
         if (datas.Status == 201) {
           alert(datas.message)}
         }
-        )
+        )}
+      else{
+         document.getElementById('container').style.display="none";
+         document.getElementById('loop').style.display="none"
+         document.getElementById("tags").style.display='flex'
+      }
       }
      
 

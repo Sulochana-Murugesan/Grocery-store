@@ -1,25 +1,9 @@
-import pymysql
+import re
 
-hostname = 'database-1.cde4044wig4c.ap-south-1.rds.amazonaws.com'
-port = 3306 
-dbname = 'Geocery_new'
-username = 'Santhosh'
-password = 'Iamingood'
+pattern = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,12}$'
+password = "Iam1@good "  # Example password
 
-con= pymysql.connect(
-    host=hostname,
-    port=port,
-    user=username,
-    password=password,
-    database=dbname
-)
-customer=con.cursor()
-vl=int(901)
-
-customer.execute('''Select * from Admin Where Password=%s and Admin_ID=%s''',("Admin1@tcs",901))
-data=customer.fetchall()
-print(data)
-
-
-
-
+if re.match(pattern, password):
+    print("Password is valid.")
+else:
+    print("Password is invalid.")

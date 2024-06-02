@@ -131,10 +131,10 @@
         var admName = result['name']
         console.log(statustype);
         if (statustype == 200) {
-          console.log("validated")
+          alert("Login Successfully")
           window.location.href = "/admin-home"
         }
-        else if(status==201 ){
+        else if(statustype==201 ){
           window.alert("Invalid Credentials")
         }
       })

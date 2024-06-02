@@ -7,7 +7,7 @@
         background-size: cover;
         font-family: Times New Roman;
         margin: 0;
-        background-image:url("static/images/bg2.jpg");
+        background-image:url("static/images/bg.jpg");
           }
       
       h3,p{
@@ -157,6 +157,7 @@
     justify-content: space-around;
 
 }
+
 th,td{
 
     padding: 18px;
@@ -164,32 +165,37 @@ th,td{
     border: 2px solid #fafafab7;
 }
 .divback {
-    background-image: url("static/images/seeimag.jpg");
+    /* color: white; */
+    backdrop-filter: blur(9px);
+    background-color: #f1f1f13d;
+    /* background-image: url("static/images/seeimag.jpg"); */
     background-size: cover;
     background-repeat: no-repeat;
-    background-size: 767px 219px;
-    width: 765px;
+    background-size: 957px 209px;
+    width: 649px;
     margin-top: 40px;
     margin-bottom: 50px;
-    height: 208px;
-    margin-left: 280px;
+    height: 102px;
+    margin-left: 308px;
     border: 4px solid rgb(124, 124, 124);
     border-radius: 53px;
 }
 #welcome {
-        margin-top: 30px;
-        margin-bottom: 10px;
-        margin-left: 20px;
-        color: rgb(0, 0, 0);
-        text-shadow: 10px 10px 10px  rgba(37, 37, 37, 0.719);
-        font-size: 25px;
-        
-        font-weight: bold;
-      }
+    /* margin-top: 30px; */
+    text-align: center;
+    margin-bottom: 10px;
+    margin-left: 20px;
+    color: rgb(255, 255, 255);
+    text-shadow: 6px 6px 9px rgba(37, 37, 37, 0.719);
+    font-size: 25px;
+    font-weight: bold;
+}
+
 h2{ margin-top: 10px;
+  text-align: center;
         margin-bottom: 10px;
         margin-left: 20px;
-        color: rgb(0, 0, 0);
+        color: rgb(255, 255, 255);
         text-shadow: 10px 10px 10px rgba(26, 26, 26, 0.719);
         font-size: 25px;
         
@@ -278,7 +284,7 @@ h2{ margin-top: 10px;
           heading.textContent = product.name;
 
           var price = document.createElement("p");
-          price.textContent = "$" + product.price;
+          price.textContent = "₹" + product.price;
 
           var cartbutton = document.createElement("button");
           cartbutton.className = "add-to-cart";
@@ -305,9 +311,7 @@ h2{ margin-top: 10px;
       var arr = [];
 
       function pusher(itemname, price, id, button) {
-        button.classList.add("disabled");
-        button.textContent = "Added ✓";
-        button.disabled = true;
+        
         cus_id = localStorage.getItem("customerId");
         product_data = {
           pid: id,
@@ -336,7 +340,24 @@ h2{ margin-top: 10px;
 
           .then((result) => {
             console.log(result);
-            if(result['status'] == 'invalid'){
+            if(result['status'] == 'valid'){
+              button.classList.add("disabled");
+        button.textContent = "Added to cart";
+        button.disabled = true;
+              
+            }
+            else if(result['status']=="nostock"){
+              button.classList.add("disabled");
+        button.textContent = "Out of Stock";
+        button.disabled = true;
+              alert(result['message'])
+
+            }
+
+            else{
+              button.classList.add("disabled");
+        button.textContent = "Added to cart";
+        button.disabled = true;
               alert(result['message'])
             }
           });
@@ -442,7 +463,7 @@ h2{ margin-top: 10px;
           heading.textContent = product.name;
 
           var price = document.createElement("p");
-          price.textContent = "$" + product.price;
+          price.textContent = "₹" + product.price;
 
           var cartbutton = document.createElement("button");
           cartbutton.className = "add-to-cart";

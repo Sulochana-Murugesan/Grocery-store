@@ -60,6 +60,7 @@
           }
     
     h1 {
+    margin-top:100px;
       color: white;
       text-align: center;
     }
@@ -266,8 +267,8 @@
           document.getElementById("quant" + x.name).innerHTML = x.aquan;
           if (x.aquan == 0) {
             cart.splice(index, 1);
-            document.getElementById("inside"+x.name).innerHTML = "No item in cart";
-            document.querySelector(".cart-item"+x.name).classList.add("dnone")
+            /*document.getElementById("inside"+x.name).innerHTML = "No item in cart";*/
+            document.querySelector(".cart-item"+x.id).classList.add("dnone")
           }
         }
       }
@@ -316,7 +317,7 @@
         for (let x of cart) {
         value = value + (x.price * x.aquan);
         }
-        document.getElementById("cart").innerHTML = `Total amount: $${value}`;
+        document.getElementById("cart").innerHTML = `Total amount: ₹${value}`;
         updatesummary()
         cartcheck()
         localStorage.setItem("apple",value)
@@ -346,7 +347,7 @@
       summarypro.innerHTML='';
       cart.forEach(function (item){
         const prodsum=document.createElement("P")
-        prodsum.textContent=`${item.aquan} x ${item.name} - $${item.price*item.aquan}`;
+        prodsum.textContent=`${item.aquan} x ${item.name} - ₹${item.price*item.aquan}`;
         summarypro.appendChild(prodsum)
         localStorage.setItem("apple",total)
         localStorage.setItem("count",cart.length)
@@ -373,10 +374,10 @@
       index=0
    
    cart.forEach(function (product){
-    if(product.name==productName){
+    if(product.id==productid){
       index = cart.indexOf(product);
       cart.splice(index, 1);
-      document.querySelector(".cart-item"+product.name).classList.add("dnone")
+      document.querySelector(".cart-item"+product.id).classList.add("dnone")
       updatesummary()
       sumtocart()
       removes()
@@ -393,17 +394,17 @@
       total=0;
       cart.forEach(function(item){
         total+=item.aquan*item.price;
-        document.getElementById("cart").innerHTML=`Total amount: $${total}`
+        document.getElementById("cart").innerHTML=`Total amount: ₹${total}`
         localStorage.setItem("apple",total)
         localStorage.setItem("count",cart.length)
       })
     }
 
     cart.forEach(function (item) {
-      let newbox = `<div class=" cart-item cart-item${item.name}">
+      let newbox = `<div class=" cart-item cart-item${item.id}">
       <div id="product"><img src="static/images/${item.name}.jpg" alt="Tomato"></div>
       <div id="inside${item.name}"><p style="justify-content: space-around; display:flex;">${item.name}</p>
-      <p style="justify-content: space-around; display:flex;">Price: $${item.price}</p>
+      <p style="justify-content: space-around; display:flex;">Price: ₹${item.price}</p>
       <div class="number_count">
       <button onclick="removes(${item.id}, '${item.name}',${item.aquan})">-</button>
       <p id="quant${item.name}">${item.aquan}</p>

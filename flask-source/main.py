@@ -65,6 +65,7 @@ def loginValidate():
         print(res)
 
         if res.get("validity") == "valid":
+            session.pop('custid',None)
             session['custid'] = cid
             print(session['custid'])
 
@@ -99,9 +100,9 @@ def add_to_wish():
         product_quant = request.json.get("quant")
         product_price = request.json.get("price")
         customer_id = session["custid"]
-    customer.execute('''select * from Wishlist where Product_ID == %s''', (product_id,))
+    customer.execute('''select * from Wishlist where Product_ID =%s''', (product_id,))
     r = customer.fetchall()
-    if (r != []):
+    if (r != ()):
         _message = "Product already added to Wishlist"
         _status = "invalid"
     else:
@@ -121,6 +122,7 @@ def logout():
     session.pop("custid",None)
     session.pop('admincustid', None)
     session.pop('password',None)
+    session.pop("adminid",None)
     return redirect("/login")
 
 
@@ -137,20 +139,27 @@ def add_to_cart():
         product_quant = request.json.get("quant")
         product_price = request.json.get("price")
         customer_id = session['custid']
-    customer.execute('''select * from Cart where Product_ID == %s and Customer_id==%s''', (product_id,customer_id,))
+    customer.execute(f'''select * from Cart where Product_ID =%s and Customer_id=%s''', (product_id,customer_id,))
     r = customer.fetchall()
-    if (r != []):
+    print(r,"here")
+    if (r != ()):
         print("hello")
         _message = "Product already added"
         _status = "invalid"
-    elif r==[]:
-        _message = "Product added Successfully"
-        _status = "valid"
-        customer.execute(
-            '''Insert Into Cart(Product_ID,Product_Name,Description,Quantity,Price, Customer_id) values(%s, %s, %s, %s, %s, %s)''',
-            (product_id, product_name, product_desc, product_quant, product_price,customer_id))
-        customer.execute("Update Products set Quantity=Quantity-1 where Product_Id==%s", (product_id,))
-        con.commit()
+    elif r==():
+        customer.execute(f'''select Quantity  from Products where Product_ID =%s''', (product_id,))
+        quan=customer.fetchone()
+        if quan[0]==0:
+            _message = "Product out of Stock"
+            _status = "nostock"
+
+        else:
+            _message = "Product added Successfully"
+            _status = "valid"
+            customer.execute(
+                f'''Insert Into Cart(Product_ID,Product_Name,Description,Quantity,Price, Customer_id) values(%s, %s, %s, %s, %s, %s)''', (product_id, product_name, product_desc, product_quant, product_price,customer_id))
+            customer.execute("Update Products set Quantity=Quantity-1 where Product_Id=%s", (product_id,))
+            con.commit()
 
     print((product_id, product_name, product_desc, product_quant, product_price))
 
@@ -182,7 +191,7 @@ def check_cart(prid):
     # if request.method == "POST":
     #     product_id = request.json.get("pid")
     p_id = prid
-    customer.execute('''select * from Cart where Product_ID == %s''', (p_id,))
+    customer.execute('''select * from Cart where Product_ID =%s''', (p_id,))
     r = customer.fetchall()
     if r != []:
         return jsonify({'status' : 'available', 'message' : 'product already added'})
@@ -211,8 +220,9 @@ def home():
 @login_required
 def cart():
     value=session['custid']
-    customer.execute(f'''select * from Cart where Customer_id == %s''', (value,))
+    customer.execute(f'''select * from Cart where Customer_id =%s''', (value,))
     r = customer.fetchall()
+    print(r)
     print(value)
     return render_template('ogc_cart.html', data=r)
 
@@ -221,27 +231,27 @@ def functions_of_Cart():
     value = session['custid']
     funtiopass=request.json.get("fun")
     prodid=request.json.get("id")
-    customer.execute('''Select Quantity from Cart  where Product_Id==%s and Customer_id == %s''',(prodid,value))
+    customer.execute('''Select Quantity from Cart  where Product_Id=%s and Customer_id =%s''',(prodid,value))
     r=customer.fetchone()
     quan=r[0]
     print(quan)
     if funtiopass=='rem':
         if quan>1:
-            customer.execute("Update Cart set Quantity=Quantity-1 where Product_Id==%s and Customer_id == %s",(prodid,value))
-            customer.execute("Update Products set Quantity=Quantity+1 where Product_Id==%s", (prodid,))
+            customer.execute("Update Cart set Quantity=Quantity-1 where Product_Id=%s and Customer_id =%s",(prodid,value))
+            customer.execute("Update Products set Quantity=Quantity+1 where Product_Id=%s", (prodid,))
             con.commit()
         elif quan==1:
-            customer.execute("Delete from Cart where Product_Id==%s and Customer_id == %s",(prodid,value))
+            customer.execute("Delete from Cart where Product_Id=%s and Customer_id =%s",(prodid,value))
             con.commit()
 
     elif funtiopass=='add':
-        customer.execute('''Select Quantity from Products  where Product_Id==%s''', (prodid,))
+        customer.execute('''Select Quantity from Products  where Product_Id=%s''', (prodid,))
         r = customer.fetchone()
         pquan = r[0]
         print(pquan)
         if pquan>0:
-            customer.execute("Update Cart set Quantity=Quantity+1 where Product_Id==%s and Customer_id == %s",(prodid,value))
-            customer.execute("Update Products set Quantity=Quantity-1 where Product_Id==%s", (prodid,))
+            customer.execute("Update Cart set Quantity=Quantity+1 where Product_Id=%s and Customer_id =%s",(prodid,value))
+            customer.execute("Update Products set Quantity=Quantity-1 where Product_Id=%s", (prodid,))
             con.commit()
             return jsonify({"Status":200,"product_quan":pquan})
 
@@ -250,10 +260,10 @@ def functions_of_Cart():
             return jsonify({"errors": 'Out of stock',"Status":201,"product_quan":pquan})
 
     elif funtiopass == 'totrem':
-        customer.execute("select Quantity from Cart where Customer_id==%s and Product_Id==%s",(value,prodid))
+        customer.execute("select Quantity from Cart where Customer_id=%s and Product_Id=%s",(value,prodid))
         qaunt=customer.fetchone()
-        customer.execute("Delete from Cart where Product_Id==%s and Customer_id == %s",(prodid,value))
-        customer.execute("Update Products set Quantity=Quantity+%s where Product_Id==%s", (qaunt[0],prodid,))
+        customer.execute("Delete from Cart where Product_Id=%s and Customer_id =%s",(prodid,value))
+        customer.execute("Update Products set Quantity=Quantity+%s where Product_Id=%s", (qaunt[0],prodid,))
         con.commit()
         return jsonify({"Status": 200, "message": "Removed Succesfully"})
 
@@ -262,7 +272,7 @@ def functions_of_Cart():
 def display_product():
     pid = request.json.get("pid")
     session['adminprodid'] = pid
-    customer.execute('Select * from Products where Product_ID == %s', (pid,))
+    customer.execute('Select * from Products where Product_ID =%s', (pid,))
     a = customer.fetchone()
     print(a)
     if a == None:
@@ -284,22 +294,23 @@ def invoice():
         custid = session['custid']
         date = str(datetime.now().date())
         customer.execute("insert into Orders values (%s, %s, %s, %s, %s)", (tr, date, x, custid, paymethod))
-        customer.execute('delete from Cart where Customer_Id==%s', (custid,))
+        customer.execute('delete from Cart where Customer_Id=%s', (custid,))
         con.commit()
         return render_template('ogc_home.html')
     if(paymethod):
         value = session['custid']
         condition = f"Customer_id='{value}'"
-        customer.execute(f'''select Product_Name,Product_ID from cart where {condition}''')
+        customer.execute(f'''select Product_Name,Product_ID from Cart where {condition}''')
         r=customer.fetchall()
         k=len(r)
         co=session.get('total')
-        x = co[0] - ((co[0] * 20) / 100) + ((co[0] * 12) / 100) + 10
+        co=int(co[0])
+        x = co - ((co * 20) / 100) + ((co * 12) / 100) + 10
         x="{:.2f}".format(x)
         tr=int(random.randint(10000, 99999))
         date = str(datetime.now().date())
         customer.execute("insert into Orders values (%s, %s, %s, %s, %s)", (tr, date, x, value, paymethod))
-        customer.execute('delete from Cart where Customer_Id==%s', (value,))
+        customer.execute('delete from Cart where Customer_Id=%s', (value,))
         con.commit()
         return render_template('ogc_invoice.html', proname=r, total=x, tr=tr, Customer_id=value, k=k)
         #return redirect(url_for('invoice'))
@@ -309,8 +320,6 @@ def invoice():
         customer.execute(f'''select sum(Price) from cart where {condition}''')
         r = customer.fetchall()
         session['total'] = r[0]
-        customer.execute('delete from Cart where Customer_Id==%s', (value,))
-        con.commit()
         return render_template('ogc_transaction.html', r=r[0])
         #return render_template('ogc_transaction.html')
 
@@ -320,7 +329,7 @@ def invoice():
 @login_required
 def wishlist():
     value = session['custid']
-    customer.execute(f'''select * from Wishlist where Customer_id == %s''', (value,))
+    customer.execute(f'''select * from Wishlist where Customer_id =%s''', (value,))
     r = customer.fetchall()
     return render_template("ogc_wishlist.html",data=r)
 
@@ -332,21 +341,21 @@ def functions_of_wish():
     print(funtiopass,prodid)
     if funtiopass == 'totrem':
         print(funtiopass,"Hello i am worked")
-        customer.execute("Delete from Wishlist where Product_Id==%s and Customer_id==%s", (prodid,value))
+        customer.execute("Delete from Wishlist where Product_Id=%s and Customer_id=%s", (prodid,value))
         con.commit()
         return jsonify({"Status": 200, "message": "Removed Succesfully"})
     elif funtiopass=='add':
-        customer.execute('''Select * from Cart  where Product_Id==%s and Customer_id==%s''', (prodid,value))
+        customer.execute('''Select * from Cart  where Product_Id=%s and Customer_id=%s''', (prodid,value))
         val = customer.fetchall()
         print(val)
-        if val==[]:
-            customer.execute("select * from Products where Product_ID==%s",(prodid,))
+        if val==():
+            customer.execute("select * from Products where Product_ID=%s",(prodid,))
             r=customer.fetchone()
             customer.execute("Insert into Cart values(%s,%s,%s,%s,%s,%s)",(r[0],r[1],r[2],1,r[4],value))
             con.commit()
             print("Im worked",r)
             return jsonify({"Status":200,"message":"Product Added to cart"})
-        elif val!=[]:
+        elif val!=():
             return jsonify({"errors": 'Already in cart',"Status":201})
 
 
@@ -354,7 +363,7 @@ def functions_of_wish():
 @login_required
 def profile_update():
     value = session['custid']
-    customer.execute(f'''select * from Registration where Customer_id == %s''', (value,))
+    customer.execute(f'''select * from Registration where Customer_id =%s''', (value,))
     r = customer.fetchone()
     return render_template('ogc_profileupdate.html', name=r[0], email=r[1],passw=r[2], address=r[3], contact=r[4])
 
@@ -380,7 +389,7 @@ def update_profile():
 
     if case==0:
         if (len(updatede) < 50):
-            customer.execute(f'''Update Registration SET Customer_Name='{updatede}' where Customer_id=={condition}''')
+            customer.execute(f'''Update Registration SET Customer_Name='{updatede}' where Customer_id={condition}''')
             con.commit()
             #return jsonify({'message':"Updation Sucess" ,"Status":200})
         else:
@@ -391,14 +400,11 @@ def update_profile():
     j = re.match(pattern, email)
     lflag = True
     if (j):
-        customer.execute(f'''select * from Registration where Email=='{(email) }'and Customer_id!={condition} ''')
-        r = customer.fetchall()
-        print(r)
-        if (r != []):
-            lflag = False
+        pass
+
     if lflag:
         if j:
-            customer.execute(f'''Update Registration SET Email='{(email)}' where  Customer_id=={condition}''')
+            customer.execute(f'''Update Registration SET Email='{email}' where  Customer_id={condition}''')
             con.commit()
             #return jsonify({'message': "Updation Sucess", "Status": 200})
         else:
@@ -409,14 +415,14 @@ def update_profile():
     
     #password
     
-    pattern = r'^(%s=.*[a-z])(%s=.*[A-Z])(%s=.*\d)(%s=.*[!@#$%*&%s^])[A-Za-z\d!@#$%^&*%s]{8,12}$'
-    print(password)
-    if (re.match(pattern, password)):
-        customer.execute(f'''Update Registration SET Password='{password}' where  Customer_id=={condition}''')
+    pattern = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,12}$'
+    print(len(password))
+    if re.match(pattern, password):
+        customer.execute(f'''Update Registration SET Password='{password}' where  Customer_id={condition}''')
         con.commit()
-        #return jsonify({'message': "Updation Sucess", "Status": 200})
+        return jsonify({'message': "Updation Sucess", "Status": 200})
     if not (re.match(pattern, password)):
-       return jsonify({"errors":"Password does not meet the Creterias","Status":201})
+       return jsonify({"errors":"Password does not meet the criteria","Status":201})
     #address
     if (len(address) > 100):
         return jsonify({"errors":"Invalid Credentials Cannot Update the Address","Status":201}) 
@@ -444,7 +450,7 @@ def newregister(name, email, password, address, contact_no, c_id):
     condition = f"Email='{email.lower()}'"
     customer.execute(f'''select * from Registration where {condition}''')
     r = customer.fetchall()
-    if (r != []):
+    if (r != ()):
         return {"message": "email Id already exists Kindly Change the email","status" : "invalid"}
 
     # customer z
@@ -460,14 +466,14 @@ def user_login(cusid,password):
     customer.execute(f'''select * from Registration where {condition}''')
     r = customer.fetchall()
 
-    if (r == []):
+    if (r == ()):
         return { "name" : "null", "customer" : cusid , "status" : "invalid",
             "message" : "Customer ID not found" }
     else:
         condition = f"Customer_ID='{cusid}' and Password='{password}'"
         customer.execute(f'''select * from Registration where {condition}''')
         r = customer.fetchall()
-        if (r == []):
+        if (r == ()):
             print("Incorrect Password")
             return {"name" : "null", "customer" : cusid ,"status": "invalid","validity":"invalid",
                     "message": "Incorrect Password"}
@@ -475,7 +481,8 @@ def user_login(cusid,password):
             condition = f"Customer_ID='{cusid}' and Status='Active'"
             customer.execute(f'''select * from Registration where {condition}''')
             r = customer.fetchall()
-            if (r == []):
+            if (r == ()):
+                session['custid'] = cusid
                 inp = "Your Account state is Inactive"
                 return {"name" : "null", "customer" : cusid ,"status": "Inactive","validity":"valid",
                         "message": "Your Account state is Inactive"}
@@ -489,7 +496,7 @@ def user_login(cusid,password):
                 #     table_data.append(list(row))
                 # print(tabulate(table_data, headers="firstrow", tablefmt="fancy_grid"))
                 #
-                customer.execute(f'''select Customer_Name from Registration where customer_id == {cusid}''')
+                customer.execute(f'''select Customer_Name from Registration where customer_id = {cusid}''')
                 r = customer.fetchall()
                 print(r)
                 cust_name = str(r[0][0])
@@ -505,7 +512,7 @@ def user_login(cusid,password):
 def profiles():
     value=session['custid']
     print(value)
-    customer.execute(f'''select * from Registration where Customer_id == %s''',(value,))
+    customer.execute(f'''select * from Registration where Customer_id =%s''',(value,))
     r = customer.fetchone()
     return render_template('ogc_profile.html',name=r[0],email=r[1],address=r[3],contact=r[4])
 
@@ -514,7 +521,7 @@ def profiles():
 def transaction():
     value=session['custid']
     condition=f"Customer_id='{value}'"
-    customer.execute(f'''select sum(Price*Quantity) from cart where {condition}''')
+    customer.execute("SELECT SUM(Price * Quantity) FROM Cart WHERE Customer_id = %s",(value,))
     r=customer.fetchall()
     session['total']=r[0]
     return render_template('ogc_transaction.html',r=r[0])
@@ -522,7 +529,7 @@ def transaction():
 @app.route('/order')
 @login_required
 def order():
-    customer.execute(f'''select * from Orders where Customer_ID == %s''',(session['custid'],))
+    customer.execute(f'''select * from Orders where Customer_ID =%s''',(session['custid'],))
     r = customer.fetchall()
     print(r)
     if r!=[]:
@@ -557,7 +564,7 @@ def admin_remove():
 @admin_login_required
 def admin_profile_update():
     value = session['admincustid']
-    customer.execute(f'''select * from Registration where Customer_id == %s''', (value,))
+    customer.execute(f'''select * from Registration where Customer_id =%s''', (value,))
     r = customer.fetchone()
     return render_template('admin_updatedetails.html', name=r[0], email=r[1], passw=r[2], address=r[3], contact=r[4])
 
@@ -573,7 +580,7 @@ def admin_update_profile():
     password = request.json.get("password")
     address = request.json.get('address')
     phone = request.json.get('contact')
-    print(updatede, condition, email), print(password, address, phone)
+    #print(updatede, condition, email), print(password, address, phone)
     case = 0
     for i in range(len(updatede)):
         if (ord(updatede[i]) > 32 and ord(updatede[i]) < 65):
@@ -585,7 +592,7 @@ def admin_update_profile():
 
     if case == 0:
         if (len(updatede) < 50):
-            customer.execute(f'''Update Registration SET Customer_Name='{updatede}' where Customer_id=={condition}''')
+            customer.execute(f'''Update Registration SET Customer_Name='{updatede}' where Customer_id={condition}''')
             con.commit()
             # return jsonify({'message':"Updation Sucess" ,"Status":200})
         else:
@@ -596,14 +603,10 @@ def admin_update_profile():
     j = re.match(pattern, email)
     lflag = True
     if (j):
-        customer.execute(f'''select * from Registration where Email=='{(email)}'and Customer_id!={condition} ''')
-        r = customer.fetchall()
-        print(r)
-        if (r != []):
-            lflag = False
+        pass
     if lflag:
         if j:
-            customer.execute(f'''Update Registration SET Email='{(email)}' where  Customer_id=={condition}''')
+            customer.execute(f'''Update Registration SET Email='{(email)}' where  Customer_id={condition}''')
             con.commit()
             # return jsonify({'message': "Updation Sucess", "Status": 200})
         else:
@@ -615,10 +618,10 @@ def admin_update_profile():
 
     # password
 
-    pattern = r'^(%s=.*[a-z])(%s=.*[A-Z])(%s=.*\d)(%s=.*[!@#$%*&%s^])[A-Za-z\d!@#$%^&*%s]{8,12}$'
-    print(password)
-    if (re.match(pattern, password)):
-        customer.execute(f'''Update Registration SET Password='{password}' where  Customer_id=={condition}''')
+    pattern = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,12}$'
+    print(type(password),"hello")
+    if (re.match(pattern,password)):
+        customer.execute(f'''Update Registration SET Password='{password}' where  Customer_id={condition}''')
         con.commit()
         # return jsonify({'message': "Updation Sucess", "Status": 200})
     if not (re.match(pattern, password)):
@@ -627,7 +630,7 @@ def admin_update_profile():
     if (len(address) > 100):
         return jsonify({"errors": "Invalid Credentials Cannot Update the Address", "Status": 201})
     elif (address):
-        customer.execute(f'''Update Registration SET Address='{address}' where Customer_id=={condition}''')
+        customer.execute(f'''Update Registration SET Address='{address}' where Customer_id={condition}''')
         con.commit()
         # return jsonify({'message': "Updation Sucess", "Status": 200})
     if len(address) == 0:
@@ -635,7 +638,7 @@ def admin_update_profile():
     # contact
     pattern = r'^[0-9]\d{9}$'
     if re.match(pattern, phone):
-        customer.execute(f'''Update Registration SET Contact_Number='{phone}' where  Customer_id=={condition}''')
+        customer.execute(f'''Update Registration SET Contact_Number='{phone}' where  Customer_id={condition}''')
         con.commit()
         return jsonify({'message': "Updation Success", "Status": 200})
 
@@ -646,7 +649,7 @@ def admin_update_profile():
 def removeCustomer():
     print('hi')
     cid=request.json.get('id')
-    customer.execute("Delete from Registration Where Customer_Id==%s",(cid,))
+    customer.execute("Delete from Registration Where Customer_Id=%s",(cid,))
     con.commit()
     return  jsonify({"message":"User Deleted Successfully","Status":200})
     
@@ -655,7 +658,7 @@ def removeCustomer():
 def display_customer():
     cid=request.json.get("id")
     session['admincustid']=cid
-    customer.execute('Select * from Registration where Customer_id == %s',(cid,))
+    customer.execute('Select * from Registration where Customer_id =%s',(cid,))
     a=customer.fetchone()
     #print(a)
     if a==None:
@@ -667,7 +670,7 @@ def display_customer():
 @app.route('/display_custid', methods=["POST"])
 def display_customer_id():
     cid=request.json.get("id")
-    customer.execute('Select * from Registration where Customer_id == %s',(cid,))
+    customer.execute('Select * from Registration where Customer_id =%s',(cid,))
     a=customer.fetchone()
     #print(a)
     if a==None:
@@ -679,11 +682,11 @@ def display_customer_id():
 @app.route('/display_prodid', methods=["POST"])
 def display_product_id():
     cid = request.json.get("id")
-    customer.execute('Select * from Products where Product_ID == %s', (cid,))
+    customer.execute('Select * from Products where Product_ID =%s', (cid,))
     a = customer.fetchone()
     print(a)
     if a == None:
-        return jsonify({"message": "No Customer Found", "Status": 201})
+        return jsonify({"message": "No Product Found", "Status": 201})
     elif a != None:
         return jsonify(
             {"name": a[0], "email": a[1], 'address': a[3], 'desc': a[2], "contact": a[4], "Status": 200,
@@ -757,7 +760,7 @@ def status_check():
 @app.route('/butonstscheck',methods=['POST']) 
 def butoncheck():
     custid=request.json.get('id')
-    customer.execute('select Status from Registration where Customer_id==%s',(custid,)) 
+    customer.execute('select Status from Registration where Customer_id=%s',(custid,)) 
     b=customer.fetchone()
     
     if b[0]=="Active":
@@ -783,9 +786,9 @@ def add_product():
         product_quant = request.json.get("quant")
         product_price = request.json.get("price")
 
-    customer.execute('''select * from Products where Product_ID == %s''', (product_id,))
+    customer.execute('''select * from Products where Product_ID =%s''', (product_id,))
     r = customer.fetchall()
-    if (r != []):
+    if (r != ()):
         _message = "Product already added"
         _status = "invalid"
     else:
@@ -812,7 +815,7 @@ def update_product():
         product_quant = request.json.get("quant")
         product_price = request.json.get("price")
 
-        customer.execute('''Update Products SET Product_Name == %s,Description == %s,Quantity == %s,Price == %s Where Product_ID == %s''', ( product_name, product_desc, product_quant, product_price,product_id))
+        customer.execute('''Update Products SET Product_Name =%s,Description =%s,Quantity =%s,Price =%s Where Product_ID =%s''', ( product_name, product_desc, product_quant, product_price,product_id))
         con.commit()
 
     _message = "Product added Successfully"
@@ -828,13 +831,13 @@ def delete_product():
     if request.method == "POST":
         product_id = request.json.get("pid")
 
-    customer.execute('''select * from Products where Product_ID == %s''', (product_id,))
+    customer.execute('''select * from Products where Product_ID =%s''', (product_id,))
     r = customer.fetchall()
     if r == []:
         _message = "Product Not available"
         _status = "invalid"
     else:
-        customer.execute('''Delete from Products where Product_ID == %s''', (product_id,))
+        customer.execute('''Delete from Products where Product_ID =%s''', (product_id,))
         con.commit()
 
         _message = "Product deleted Successfully"
@@ -851,7 +854,7 @@ def serach_admin_product():
     if request.method == "GET":
         product_id = request.json.get("pid")
 
-    customer.execute('''select * from Products where Product_ID == %s''', (product_id,))
+    customer.execute('''select * from Products where Product_ID =%s''', (product_id,))
     r = customer.fetchall()
     if r == []:
         _message = "Product Not available"
@@ -875,7 +878,7 @@ def admin_add_product():
 @admin_login_required
 def admin_update_product():
     value = session['adminprodid']
-    customer.execute(f'''select * from Products where Product_ID == %s''', (value,))
+    customer.execute(f'''select * from Products where Product_ID =%s''', (value,))
     r = customer.fetchone()
     print(r)
     return render_template('ogc_updateproduct.html',pid=r[0], pname=r[1], desc=r[2], quan=r[3], price=r[4])
@@ -926,10 +929,11 @@ def searching():
     return jsonify({'products' : lis})
 
 @app.route('/customerinactive')
-@admin_login_required
+
 def customerinactive():
     value=session['custid']
-    customer.execute(f'''update Registration set Status='Inactive' where Customer_id==%s ''',(value,))
+    print(value)
+    customer.execute(f'''update Registration set Status='Inactive' where Customer_id=%s ''',(value,))
     con.commit()
     session.pop("custid",None)
     return render_template('ogc_login.html')
@@ -953,10 +957,10 @@ def admvalidate():
     print(session.items())
     adminid=request.json.get("adminid")
     password=request.json.get("password")
-    session['admincustid']=int(adminid)
+    session['admincustid']=adminid
     session['password']=password
-    adminid1=int(adminid)
-    customer.execute('''select Admin_Id,Password from Admin where Admin_Id=%s and Password= %s''',(adminid1,password,))
+    print(adminid,password)
+    customer.execute('select Admin_Id,Password from Admin where Admin_Id=%s and Password=%s',(adminid,password,))
     adminget=customer.fetchone()
     if adminget is None:
         return jsonify({"status":201,"message":"Invalid Credentials"})
@@ -973,8 +977,10 @@ def admvalidate():
 @admin_login_required
 def adminprof():
     id=session['admincustid']
+    print(id)
     customer.execute('select * from Admin where Admin_Id=%s',(id,))
     adminget=customer.fetchone()
+    print(adminget)
     return render_template("adminprofile.html",name=adminget[1],contact=adminget[3])  
 
 @app.route('/admin-profile')
@@ -990,20 +996,19 @@ def Admin_profile_update():
     updatede=request.json.get('name')
     contact=request.json.get('contact')
     value = session['admincustid']
-    customer.execute(f'''Update Admin SET Admin_Name='{updatede}',Contact_Number={contact} where Admin_ID=={value}''')
+    customer.execute(f'''Update Admin SET Admin_Name='{updatede}',Contact_Number={contact} where Admin_ID={value}''')
     con.commit()
     return jsonify({'message': "Updation Success", "Status": 200})
 
      
 @app.route("/Contact")
-@admin_login_required
 def inactivelander():
     return render_template('lander.html')
  
 @ app.route("/resttoactivate")
 def activate():
     value=session['custid']
-    customer.execute(f'''update Registration set Status='Active' where Customer_id==%s ''',(value,))
+    customer.execute(f'''update Registration set Status='Active' where Customer_id=%s ''',(value,))
     con.commit()
     return render_template('ogc_login.html')
       
@@ -1026,6 +1031,28 @@ def admin_search_product():
 @app.route('/admin-login')
 def admin_login():
     return render_template('admin_login.html')
+
+@app.route("/admin-register")
+def admin_register():
+    return render_template('admin_register.html')
+
+@app.route('/adminregister-validate',methods=["POST"])
+def adminregisterValidate():
+    if request.method == "POST":
+        name = request.json.get("userName")
+        pwd = request.json.get("userPassword")
+        cid = request.json.get("customerId")
+        contact = request.json.get("usernumber")
+    res = adminnewregister(name, pwd,contact, cid)
+    print(res)
+    print(f"UID - {cid} \nPassword - {pwd}")
+    return jsonify(res)
+
+
+def adminnewregister(name, password, contact_no, c_id):
+    customer.execute('''Insert Into Admin values(%s, %s, %s, %s)''', (c_id,name,password,contact_no))
+    con.commit()
+    return {"customer" : c_id ,"status" : 'valid',"message" : "Admin Registration Successful"}
 
 @app.errorhandler(404)
 def page_not_found(error):

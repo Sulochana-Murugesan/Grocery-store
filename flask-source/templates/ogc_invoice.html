@@ -129,11 +129,11 @@
           <h3>INVOICE</h3>
           <table>
             <tbody id="content"></tbody>
-              <tr><td id="L">Transaction ID</td><td>{{tr}}</td></tr><tr><td id="L">Customer ID</td><td>{{Customer_id}}</td></tr>`
+              <tr><td id="L">Transaction ID</td><td>{{tr}}</td></tr><tr><td id="L">Customer ID</td><td>{{Customer_id}}</td></tr>
               {% for value in proname %}
                 <tr><td id="L">{{value[0]}}</td><td>{{value[1]}}</td></tr>
             {% endfor %}
-              <tr><td id="L">Total Price</td><td>${{total}}</td></tr><tr><td id="L">Number of items</td><td>{{k}}</td></tr>
+              <tr><td id="L">Total Price</td><td>₹{{total}}</td></tr><tr><td id="L">Number of items</td><td>{{k}}</td></tr>
 
           </table>
         </div>

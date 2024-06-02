@@ -117,21 +117,28 @@ button {
 button:hover {
   background-color: #45a049;
 }
+.back{
+  display: flex;
+  justify-content: space-between;
+}
  </style>
         <script>
+          function back(){
+            window.location.href='/cart';
+          }
 	    function transaction(){
             /*r=parseInt(localStorage.getItem("apple"));*/
             var co={{r[0]}}
-            document.getElementById("to").innerHTML="Total product Price :$ "+{{r[0]}};
+            document.getElementById("to").innerHTML="Total product Price :₹ "+{{r[0]}};
             x=(co*20)/100;
-            document.getElementById("td").innerHTML="Total Discount :$ "+x;
+            document.getElementById("td").innerHTML="Total Discount :₹ "+x;
             y=(co*12)/100;
-            document.getElementById("gst").innerHTML="GST :$ "+y;
-            z=10;
-            document.getElementById("dc").innerHTML="DeliveryCharge :$ "+z;
+            document.getElementById("gst").innerHTML="GST :₹ "+y;
+            z=60;
+            document.getElementById("dc").innerHTML="DeliveryCharge :₹ "+z;
             total=co-x+y+z;
             totals=total.toFixed(2)
-            document.getElementById("ot").innerHTML="Order Total :$ "+totals;
+            document.getElementById("ot").innerHTML="Order Total :₹ "+totals;
             /*localStorage.setItem("total",totals)*/
 
             }
@@ -202,7 +209,9 @@ button:hover {
                 <p id="ot"><span id="orderTotal"></span></p>
 
             </div>
-        <button type="submit" name="submit" value="submit" onclick="pay()">Proceed to Pay</button>
+       <div class="back">
+            <button type="submit" name="submit" value="submit" onclick="pay()">Proceed to Pay</button>
+            <button type="button" name="submit" value="submit" onclick="back()">Back</button></div>
         </form>
 
     </body>
