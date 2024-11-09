@@ -1,0 +1,203 @@
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+  <title>Customer Login - Online Grocery Store</title>
+  <style>
+    body {
+      background-repeat: no-repeat;
+      background-size: cover;
+      font-family: sans-serif;
+      background-image: url("static/images/bg.jpg");
+      padding: 0;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    h1,h3 {
+                margin: 2px;
+                  text-align: center;
+                  color: #fff;
+                  margin-bottom: 10px;
+              }
+
+              h4{
+                  text-align: center;
+                  color: #fff;
+                  margin: 15px;
+                  padding: 5px;
+              }
+
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      color: #fff;
+    }
+
+    input, textarea {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 16px;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 14px;
+    background: #ffffff29;
+    backdrop-filter: blur(10px);
+}
+    #loginForm {
+      max-height: 350px;
+    padding: 40px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    width: 450px;
+    background-color: #f4f4f43d;
+    backdrop-filter: blur(12px);
+    /* color: red; */
+}
+
+    button {
+      margin: 0 200px;
+      padding: 10px 20px;
+      font-size: 15px;
+      text-align: center;
+      text-decoration: none;
+      color: white;
+      background-color: #4caf50;
+      border-radius: 5px;
+      transition: background_color 0.3s;
+      display: flex;
+      cursor: pointer;
+      justify-content: center;
+      border: 1px solid #4caf50;
+
+    }
+    #lkk{
+          color: #000000a8;
+          text-decoration: none;
+        }
+
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+  <title>Login - Online Grocery Store</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+
+<body>
+  <form id="loginForm">
+    <h1>Online Grocery Store</h1>
+      <h3>Login now !!</h3>
+    <label for="customerId">Customer ID</label>
+    <input type="text" id="customerId" required>
+    <label for="password">Password</label>
+    <input type="password" minlength=8 maxlength="30" id="password" required>
+    <br>
+    <button type="button" onclick="savedata()">Login</button><br>
+    <h4>Are you a new customer ? <a href="/register" id="lkk">Register Here </a></h4>
+    <h4>For Administrators <a href="/admin-login" id="lkk">Login Here </a></h4>
+    
+  </form>
+</body>
+<script>
+  /*
+  document.getElementById('loginForm').addEventListener("submit",function(event){
+    event.preventDefault();
+    var customerId=document.getElementById("customerId").value;
+    var password=document.getElementById("password").value;
+    
+    var cred= {
+      "123456":"qwertyuiop11",
+      "2587413695":"qazwsx@Dc323",
+      "7892546312":"guSNrfian12@",
+      "8793543240":"Asdjhb@112n",
+      "4567890006":"XCvbdf@oier0",
+      "6817337856":"ygsudfgIU@65",
+      "9123489761":"@EOPknv32345",
+      "4651237248":"#2blsluHSLUF"
+    };
+    if (cred.hasOwnProperty(customerId) && cred[customerId] === password ){
+      alert("Login Sucessfull !!");
+      window.location.href = "/home";
+    }
+    else {
+     alert("Invalid Credentials - Please Enter correct credentials !!");
+    }
+  });*/
+
+  // function savedata(){
+  // 	 var customerId = document.getElementById("customerId").value;
+  //                     var password = document.getElementById("password").value;
+
+  //                     var storedData = localStorage.getItem('users');
+
+  //                     if (storedData) {
+  //                         var userData = JSON.parse(storedData);
+
+  //                         if (customerId == userData.customerId && password == userData.userPassword) {
+  // 				 alert("Login sucessfull");
+  //                                 window.location.href = '/home';
+  //                             } else {
+  //                                 alert("Invalid credentials. Please try again.");
+  //                             }
+  //                         }
+  //   }
+  function savedata() {
+    var formData = { "userid": document.getElementById('customerId').value, "password": document.getElementById('password').value };
+    
+    // console.log(formData,typeof(formData))
+    fetch('/login-validate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(formData)
+    })
+      .then((response) => {
+        if (response.status == 200) {
+          console.log(response)
+          return response.json();
+        }
+        else {
+          throw `error with status ${response.status}`;
+        }
+      })
+
+      .then(result => {
+        console.log(result)
+        var statustype = result['status']
+        var cusID = result['customer']
+        var cusName = result['name']
+        localStorage.setItem("userName",cusName)
+        console.log(statustype);
+        
+        if (statustype === "Inactive") {
+          window.location.href = "/Contact"
+        }
+        else if (statustype==="valid"){
+          alert("Logged in successfully")
+          window.location.href='/home'
+        }
+        else if (statustype==='invalid'){
+          window.alert("Invalid Credentials")
+        }
+      })
+
+
+    // .catch(error => { 
+    //   console.error('Error:', error); 
+    // }); 
+
+
+  }
+  
+
+</script>
+</body>
+
+</html>
