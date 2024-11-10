@@ -104,7 +104,7 @@ def add_to_wish():
         customer_id = session["custid"]
     customer.execute('''select * from Wishlist where Product_ID =?''', (product_id,))
     r = customer.fetchall()
-    if (r != ()):
+    if (r != []):
         _message = "Product already added to Wishlist"
         _status = "invalid"
     else:
@@ -144,7 +144,7 @@ def add_to_cart():
     customer.execute(f'''select * from Cart where Product_ID =? and Customer_id=?''', (product_id,customer_id,))
     r = customer.fetchall()
     print(r,"here")
-    if (r != ()):
+    if (r != []):
         print("hello")
         _message = "Product already added"
         _status = "invalid"
@@ -452,7 +452,8 @@ def newregister(name, email, password, address, contact_no, c_id):
     condition = f"Email='{email.lower()}'"
     customer.execute(f'''select * from Registration where {condition}''')
     r = customer.fetchall()
-    if (r != ()):
+    print(r)
+    if (r != []):
         return {"message": "email Id already exists Kindly Change the email","status" : "invalid"}
 
     # customer z
@@ -790,7 +791,7 @@ def add_product():
 
     customer.execute('''select * from Products where Product_ID =?''', (product_id,))
     r = customer.fetchall()
-    if (r != ()):
+    if (r != []):
         _message = "Product already added"
         _status = "invalid"
     else:
